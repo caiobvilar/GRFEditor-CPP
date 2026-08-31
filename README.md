@@ -2,22 +2,20 @@
 
 Cross-platform editor for Ragnarok Online **GRF / GPF / Thor** archives — a from-scratch C++20 reimplementation of Tokeiburu's Windows-only [GRF Editor](https://github.com/Tokeiburu/GRFEditor), built with SDL3, Dear ImGui (docking) and OpenGL 3.3.
 
-![CI](https://github.com/caiobvilar/GRFEditor-CPP/actions/workflows/ci.yml/badge.svg)
-![Release](https://img.shields.io/github/v/release/caiobvilar/GRFEditor-CPP)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](LICENSE)
 
 > **Status:** early development. A functional archive browser front-end (`M2`) sits on a solid container engine (`M1`). Versioning follows milestones when the feature name changes — you may see `0.x.0 (Mn)` in the About box.
 
 ## Download
 
-GNU/Linux x86_64 installers are published for every release:
+GNU/Linux x86_64 installers are attached to each [GitHub release](https://github.com/caiobvilar/GRFEditor-CPP/releases/latest):
 
 | Package | Install |
 | --- | --- |
 | [`.deb` (Debian / Ubuntu)](https://github.com/caiobvilar/GRFEditor-CPP/releases/latest) | `sudo apt install ./grfeditor-*.deb` |
 | [`.rpm` (Fedora / openSUSE / RHEL)](https://github.com/caiobvilar/GRFEditor-CPP/releases/latest) | `sudo dnf install ./grfeditor-*.rpm` |
 
-Each release also ships a `SHA256SUMS` file. A text-mode CLI (`grfcl`) ships in the same packages.
+Each release also ships a `SHA256SUMS` file. A text-mode CLI (`grfcl`) ships in the same packages. Packages can be produced locally with CMake/CPack — see "Building" below.
 
 ## Features
 
@@ -86,7 +84,7 @@ Run it:
 ctest --test-dir build --output-on-failure
 ```
 
-The test binary (`grfcore_tests`, GoogleTest) drives the whole engine without any GUI or display: zlib/LZSS round-trips, DES, header marshaling, CP1252, v2/v3 containers, THOR modes `0x30`/`0x21`, RGZ, and provider dispatch. CI builds and tests it under both GCC and Clang, and checks `clang-format`.
+The test binary (`grfcore_tests`, GoogleTest) drives the whole engine without any GUI or display: zlib/LZSS round-trips, DES, header marshaling, CP1252, v2/v3 containers, THOR modes `0x30`/`0x21`, RGZ, and provider dispatch.
 
 ## Project layout
 
