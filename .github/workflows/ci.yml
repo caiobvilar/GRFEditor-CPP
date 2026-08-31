@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: build & test (gcc)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install conan
+        run: |
+          python3 -m venv "$HOME/.conan-venv"
+          "$HOME/.conan-venv/bin/pip" install --upgrade pip conan
+          echo "$HOME/.conan-venv/bin" >> "$GITHUB_PATH"
+
+      - name: Cache conan data
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
+
+      - name: Detect conan profile
+        run: conan profile detect --force
+
+      - name: Conan install
+        run: conan install . -of build -s build_type=Release --build=missing
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
+
+      - name: Build
+        run: cmake --build build -j "$(nproc)"
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  test-clang:
+    name: build & test (clang)
+    runs-on: ubuntu-24.04
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang
+        run: sudo apt-get update && sudo apt-get install -y clang
+
+      - name: Install conan
+        run: |
+          python3 -m venv "$HOME/.conan-venv"
+          "$HOME/.conan-venv/bin/pip" install --upgrade pip conan
+          echo "$HOME/.conan-venv/bin" >> "$GITHUB_PATH"
+
+      - name: Cache conan data
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-clang-${{ hashFiles('conanfile.py') }}
+
+      - name: Detect conan profile
+        run: conan profile detect --force
+
+      - name: Conan install
+        run: conan install . -of build -s build_type=Release --build=missing
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
+
+      - name: Build
+        run: cmake --build build -j "$(nproc)"
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+      - name: Check formatting
+        run: |
+          clang-format -n --Werror $(git ls-files '*.cpp' '*.h')
+
+  package:
+    needs: [test, test-clang, format]
+    uses: ./.github/workflows/package.yml

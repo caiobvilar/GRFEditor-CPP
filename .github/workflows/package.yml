@@ -1,0 +1,87 @@
+name: package
+
+on:
+  workflow_call:
+
+jobs:
+  deb:
+    name: package (.deb)
+    runs-on: ubuntu-24.04
+    env:
+      GENERATOR: DEB
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make dpkg-dev
+
+      - name: Install conan
+        run: |
+          python3 -m venv "$HOME/.conan-venv"
+          "$HOME/.conan-venv/bin/pip" install --upgrade pip conan
+          echo "$HOME/.conan-venv/bin" >> "$GITHUB_PATH"
+
+      - name: Detect conan profile
+        run: conan profile detect --force
+
+      - name: Conan install
+        run: conan install . -of build -s build_type=Release --build=missing
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
+
+      - name: Build
+        run: cmake --build build -j 2
+
+      - name: Package
+        run: cpack -B build -G "$GENERATOR"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: grfeditor-deb
+          path: build/grfeditor-*.deb
+          if-no-files-found: error
+
+  rpm:
+    name: package (.rpm)
+    runs-on: ubuntu-24.04
+    container: fedora:41
+    env:
+      GENERATOR: RPM
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packaging tools
+        run: |
+          dnf install -y gcc-c++ make cmake python3 python3-pip rpm-build git
+
+      - name: Install conan
+        run: |
+          python3 -m venv "$HOME/.conan-venv"
+          "$HOME/.conan-venv/bin/pip" install --upgrade pip conan
+          echo "$HOME/.conan-venv/bin" >> "$GITHUB_PATH"
+
+      - name: Detect conan profile
+        run: conan profile detect --force
+
+      - name: Conan install
+        run: conan install . -of build -s build_type=Release --build=missing
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
+
+      - name: Build
+        run: cmake --build build -j 2
+
+      - name: Package
+        run: cpack -B build -G "$GENERATOR"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: grfeditor-rpm
+          path: build/grfeditor-*.rpm
+          if-no-files-found: error

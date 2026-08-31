@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    uses: ./.github/workflows/package.yml
+
+  publish:
+    name: publish release
+    runs-on: ubuntu-24.04
+    needs: package
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum grfeditor-*.deb grfeditor-*.rpm > SHA256SUMS
+
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FILES=$(find "$PWD/dist" -type f | sort)
+          gh release create "$GITHUB_REF_NAME" $FILES \
+            --generate-notes \
+            --title "grfeditor ${GITHUB_REF_NAME}"

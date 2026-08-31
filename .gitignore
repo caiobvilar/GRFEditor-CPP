@@ -1,0 +1,25 @@
+# Build artifacts
+build/
+cmake-build-*/
+
+# Conan
+conaninfo.txt
+graph_info.json
+CMakeUserPresets.json
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.sln
+*.vcxproj*
+
+# Session checkpoints
+.claude/
+
+# ImGui layout/settings
+imgui.ini
+
+# OS junk
+.DS_Store
+Thumbs.db

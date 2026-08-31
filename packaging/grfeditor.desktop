@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=GRF Editor
+GenericName=RO Archive Editor
+Comment=Edit Ragnarok Online GRF/GPF/Thor archives
+Exec=grfeditor
+Icon=grfeditor-256
+Terminal=false
+Categories=Utility;Graphics;
+Keywords=GRF;GPF;Thor;Ragnarok;RO;archive;
+MimeType=application/x-ragnarok-grf;application/x-ragnarok-gpf;application/x-ragnarok-rgz;application/x-ragnarok-thor;
