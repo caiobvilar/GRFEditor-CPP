@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgl1-mesa-dev mesa-common-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev libxss-dev libpulse-dev libxkbcommon-dev libwayland-dev
+
       - name: Install conan
         run: |
           python3 -m venv "$HOME/.conan-venv"
@@ -27,11 +32,14 @@ jobs:
       - name: Detect conan profile
         run: conan profile detect --force
 
+      - name: Configure sudo for system reqs
+        run: conan config set tools.system.package_manager:sudo=True
+
       - name: Conan install
-        run: conan install . -of build -s build_type=Release --build=missing
+        run: conan install . -of build -s build_type=Release -s compiler.cppstd=gnu20 --build=missing
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
 
       - name: Build
         run: cmake --build build -j "$(nproc)"
@@ -47,8 +55,10 @@ jobs:
       CXX: clang++
     steps:
       - uses: actions/checkout@v4
-      - name: Install clang
-        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Install clang and system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang ninja-build libgl1-mesa-dev mesa-common-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev libxss-dev libpulse-dev libxkbcommon-dev libwayland-dev
 
       - name: Install conan
         run: |
@@ -65,11 +75,14 @@ jobs:
       - name: Detect conan profile
         run: conan profile detect --force
 
+      - name: Configure sudo for system reqs
+        run: conan config set tools.system.package_manager:sudo=True
+
       - name: Conan install
-        run: conan install . -of build -s build_type=Release --build=missing
+        run: conan install . -of build -s build_type=Release -s compiler.cppstd=gnu20 --build=missing
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
 
       - name: Build
         run: cmake --build build -j "$(nproc)"
@@ -82,8 +95,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install clang-format
-        run: sudo apt-get update && sudo apt-get install -y clang-format
+      - name: Install clang-format (pinned)
+        run: |
+          python3 -m venv "$HOME/.venv"
+          "$HOME/.venv/bin/pip" install "clang-format==22.1.5"
+          echo "$HOME/.venv/bin" >> "$GITHUB_PATH"
       - name: Check formatting
         run: |
           clang-format -n --Werror $(git ls-files '*.cpp' '*.h')

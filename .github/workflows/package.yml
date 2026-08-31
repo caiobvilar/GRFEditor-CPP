@@ -12,10 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install packaging tools
+      - name: Install packaging tools + system deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y make dpkg-dev
+          sudo apt-get install -y make dpkg-dev ninja-build libgl1-mesa-dev mesa-common-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev libxss-dev libpulse-dev libxkbcommon-dev libwayland-dev
 
       - name: Install conan
         run: |
@@ -26,11 +26,14 @@ jobs:
       - name: Detect conan profile
         run: conan profile detect --force
 
+      - name: Configure sudo for system reqs
+        run: conan config set tools.system.package_manager:sudo=True
+
       - name: Conan install
-        run: conan install . -of build -s build_type=Release --build=missing
+        run: conan install . -of build -s build_type=Release -s compiler.cppstd=gnu20 --build=missing
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
 
       - name: Build
         run: cmake --build build -j 2
@@ -54,9 +57,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install packaging tools
+      - name: Install packaging tools + system deps
         run: |
-          dnf install -y gcc-c++ make cmake python3 python3-pip rpm-build git
+          dnf install -y gcc-c++ make cmake python3 python3-pip rpm-build git ninja-build \
+            mesa-libEGL-devel mesa-libGL-devel libXrandr-devel libXi-devel libXinerama-devel \
+            libXcursor-devel libXss-devel pulseaudio-libs-devel libxkbcommon-devel wayland-devel
 
       - name: Install conan
         run: |
@@ -68,10 +73,10 @@ jobs:
         run: conan profile detect --force
 
       - name: Conan install
-        run: conan install . -of build -s build_type=Release --build=missing
+        run: conan install . -of build -s build_type=Release -s compiler.cppstd=gnu20 --build=missing
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$PWD/build/conan_toolchain.cmake"
 
       - name: Build
         run: cmake --build build -j 2
