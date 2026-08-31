@@ -122,7 +122,10 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "grfeditor")
 set(CPACK_PACKAGE_FILE_NAME "grfeditor-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_PROCESSOR}")
 
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+# .deb is cross-built here on Fedora, where dpkg-shlibdeps cannot resolve
+# Debian package deps; declare them explicitly instead.
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libgcc-s1, libstdc++6, libgl1, libegl1, libx11-6, libxrandr2, libxi6, libxinerama1, libxcursor1, libxss1, libxkbcommon0, libwayland-client0, libpulse0, zlib1g, libasound2t64")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/caiobvilar/GRFEditor-CPP")
 
 set(CPACK_RPM_PACKAGE_LICENSE "CC-BY-NC-SA-4.0")
